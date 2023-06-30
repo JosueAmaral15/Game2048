@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table {
+            border-collapse:collapse;
+            background-color:brown;
+        }
+
+        table td {
+            border: 1px solid black;
+            text-align: center;
+            vertical-align:center;
+            width:125px;
+            height:125px;
+        }
+
+        #time {
+            padding:1rem;
+            margin:1rem;
+            
+        }
+    </style>
+    <script>
+
+        function Squares (position, number, inserted) {
+            this.position = position;
+            this.number = number;
+            this.inserted = inserted;
+
+            this.insert = function (position, number) {
+                this.position = position;
+                this.number = number;
+                let element = document.getElementById(this.position.toString());
+                element.innerHTML = number.toString();
+                if (this.inserted != true)
+                    this.inserted = true;
+            }
+
+            this.update_position = function (position) {
+                if(this.inserted) {
+                    let element = document.getElementById(this.position.toString());
+                    let other = document.getElementById(position.toString());
+                    other.innerHTML = this.number.toString();
+                    element.innerHTML = "";
+                    this.position = position;
+                }
+            }
+
+            this.remove_position = function() {
+                if(this.inserted) {
+                    let element = document.getElementById(this.position.toString());
+                    element.innerHTML = "";
+                    this.inserted = false;
+                }
+            }
+
+            this.change_number = function(number) {
+                let element = document.getElementById(this.position.toString());
+                this.number = number;
+                element.innerHTML = number.toString();
+            }
+        }
+
+        var Game = { 
+            DEBUG : true,
+            ELEMENTS_NUMBER : 16,
+            square_array : Array(),
+            occupied : 0,
+            prepare : function () {
+                document.body.onkeypress = function () {
+                    if (event.keyCode == '119' || event.keyCode == '38') {
+                        for (let i = 4; i < Game.ELEMENTS_NUMBER; i++) {
+                            if (Game.square_array[i].inserted) {
+                                let table_position = Game.square_array[i].position;
+                                //Queremos verificar cada elemento para determinar se devemos ou não trazer para cima
+                                // Se um elemento é o 15, os elementos 11, 7 e 4 devem ser analizados
+                                table_position-=4;
+                                square_position = -1;
+                                while(table_position > 0) {
+                                    let real_position = Game.search_for_position(table_position);
+                                    if (Game.DEBUG)
+                                        console.log("TEST1 table_position: ", table_position, "square_position: ", square_position, "real_position: ", real_position);
+                                    if (!Game.square_array[real_position].inserted) {
+                                        square_position = table_position;
+                                    } else {
+                                        break;
+                                    }
+                                    table_position-=4;
+                                }
+                                if(Game.DEBUG)
+                                    console.log("TEST2 table_position: ", table_position, "square_position: ", square_position);
+                                if (square_position != -1) {
+                                    Game.square_array[i].update_position(square_position);
+                                }
+                            }
+                        }
+                        Game.insert_square();
+                    } else 
+                    if (event.keyCode == '97' || event.keyCode == '39') {
+                        console.log("direita");
+                        Game.insert_square();
+                    } else 
+                    if (event.keyCode == '115' || event.keyCode == '40') {
+                        console.log("baixo");
+                        Game.insert_square();
+                    } else 
+                    if (event.keyCode == '100' || event.keyCode == '37') {
+                        console.log("esquerda");
+                        Game.insert_square();
+                    }
+                }
+
+                for (let i = 0; i < Game.ELEMENTS_NUMBER; i++) {
+                    Game.square_array.push(new Squares(i,0,false));
+                }
+
+                Game.insert_square();
+            }, 
+            insert_square : function () {
+                if (Game.occupied < Game.ELEMENTS_NUMBER) {
+                    let inserted = false;
+                    let number = parseInt(Game.ELEMENTS_NUMBER*Math.random());
+                    while(!inserted) {
+                        // Now we want to insert into a square the number
+                        if (!Game.square_array[number].inserted) {
+                            Game.square_array[number].insert(number +1, 2);
+                            inserted = true;
+                        } else
+                        number = parseInt(Game.ELEMENTS_NUMBER*Math.random());
+                    }
+                    Game.occupied += 1;
+                }
+            },
+
+            remove_square : function (number) {
+                if (Game.occupied > 0 && Game.square_array[number].inserted) {
+                    Game.square_array[number].remove_position();
+                }
+            },
+
+            search_for_position : function(position) {
+                let index = -1;
+                for (let i=0; i < Game.ELEMENTS_NUMBER; i++) {
+                    if (Game.DEBUG) {
+                        console.log("i: ", i, "position: ", position, "Game.square_array[i].position: ", Game.square_array[i].position, "Game.square_array[i].position == position: ", Game.square_array[i].position == position);
+                    }
+                    if (Game.square_array[i].position == position) {
+                        index = i;
+                        break;
+                    }
+                }
+                return index;
+            }
+
+        }
+    </script>
+</head>
+<body>
+    <div id="time"></div>
+    <table width="500px" height="500px">
+        <tbody>
+            <tr>
+                <td id="1"></td>
+                <td id="2"></td>
+                <td id="3"></td>
+                <td id="4"></td>
+            </tr>
+            <tr>
+                <td id="5"></td>
+                <td id="6"></td>
+                <td id="7"></td>
+                <td id="8"></td>
+            </tr>
+            <tr>
+                <td id="9"></td>
+                <td id="10"></td>
+                <td id="11"></td>
+                <td id="12"></td>
+            </tr>
+            <tr>
+                <td id="13"></td>
+                <td id="14"></td>
+                <td id="15"></td>
+                <td id="16"></td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+        d1 = new Date();
+        function updateDate() {
+            d1 = new Date();
+            time.innerHTML = d1.getHours() +":"+d1.getMinutes()+":"+d1.getSeconds();
+        }
+        
+        setInterval(updateDate,1000);
+        Game.prepare();
+    </script>
+</body>
+</html>
