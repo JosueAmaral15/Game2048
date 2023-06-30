@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>2048 game</title>
     <style>
         table {
             border-collapse:collapse;
@@ -26,11 +26,17 @@
     </style>
     <script>
 
+        /*
+            [] Resolver problema com a inserção de novos elementos sem movimento de peças;
+            [] Resolver problema de movimentos travados de peças para a direita e para a esquerda;
+            [] Resolver problema de movimentos recursivos que faz com que as peças façam combos (combinações) em uma única jogada;
+        */
+
         function Squares (position, number, inserted) {
             this.position = position;
             this.number = number;
             this.inserted = inserted;
-
+            /*
             this.insert = function (position, number) {
                 this.position = position;
                 this.number = number;
@@ -63,11 +69,47 @@
                 this.number = number;
                 element.innerHTML = number.toString();
             }
+            */
+            this.insert = function (number) {
+                this.number = number;
+                let element = document.getElementById(this.position.toString());
+                if (Game.DEBUG)
+                    console.log("TEST this.position: ", this.position)
+                element.innerHTML = number.toString();
+                if (this.inserted != true)
+                    this.inserted = true;
+            }
+
+            this.update_position = function (position) {
+                if(this.inserted) {
+                    let element = document.getElementById(this.position.toString());
+                    let other = document.getElementById(position.toString());
+                    other.innerHTML = this.number.toString();
+                    element.innerHTML = "";
+                    //precisa atualizar o outro 
+                }
+            }
+
+            this.remove_position = function() {
+                if(this.inserted) {
+                    let element = document.getElementById(this.position.toString());
+                    element.innerHTML = "";
+                    this.inserted = false;
+                }
+            }
+
+            this.change_number = function(number) {
+                let element = document.getElementById(this.position.toString());
+                this.number = number;
+                element.innerHTML = number.toString();
+            }
         }
 
         var Game = { 
             DEBUG : true,
             ELEMENTS_NUMBER : 16,
+            WIDTH: 4,
+            HEIGHT : 4,
             square_array : Array(),
             occupied : 0,
             prepare : function () {
@@ -75,41 +117,148 @@
                     if (event.keyCode == '119' || event.keyCode == '38') {
                         for (let i = 4; i < Game.ELEMENTS_NUMBER; i++) {
                             if (Game.square_array[i].inserted) {
-                                let table_position = Game.square_array[i].position;
-                                //Queremos verificar cada elemento para determinar se devemos ou não trazer para cima
-                                // Se um elemento é o 15, os elementos 11, 7 e 4 devem ser analizados
-                                table_position-=4;
+                                let table_position = Game.square_array[i].position; // We take a position of a table cell
+                                // We want to check each element to determine whether or not to bring up
+                                // If an element is 15, elements 11, 7 and 4 must be analyzed
+                                table_position-=4; // We point the address of the cells at the top of the table
                                 square_position = -1;
-                                while(table_position > 0) {
-                                    let real_position = Game.search_for_position(table_position);
+                                while(table_position >= 0) { // We move through the cells of the table in an upward direction
+                                    //let real_position = Game.search_for_position(table_position);
                                     if (Game.DEBUG)
-                                        console.log("TEST1 table_position: ", table_position, "square_position: ", square_position, "real_position: ", real_position);
-                                    if (!Game.square_array[real_position].inserted) {
+                                        console.log("TEST1 table_position: ", table_position, "square_position: ", square_position);
+                                    if (!Game.square_array[table_position].inserted) { // If the cell contains no values, the cell will be a candidate for use
                                         square_position = table_position;
                                     } else {
+                                        if (Game.square_array[table_position].number == Game.square_array[i].number) {
+                                            Game.square_array[table_position].change_number(Game.square_array[table_position].number *2);
+                                            Game.square_array[i].remove_position();
+                                            if(Game.occupied > 0)
+                                                Game.occupied -=1
+                                        }
                                         break;
                                     }
                                     table_position-=4;
                                 }
+
                                 if(Game.DEBUG)
                                     console.log("TEST2 table_position: ", table_position, "square_position: ", square_position);
+                                
                                 if (square_position != -1) {
-                                    Game.square_array[i].update_position(square_position);
+                                    Game.square_array[square_position].insert(Game.square_array[i].number);
+                                    Game.square_array[i].remove_position();
+                                }
+                            }
+                        }
+                        Game.insert_square();
+
+                    } else 
+                    if (event.keyCode == '97' || event.keyCode == '65' || event.keyCode == '37') {
+                        for (let i = 0; i < Game.ELEMENTS_NUMBER; i++) {
+                            if (Game.square_array[i].inserted) {
+                                let table_position = Game.square_array[i].position; // We take a position of a table cell
+                                // We want to check each element to determine whether or not to bring up
+                                // If an element is 5, elements 6 and 7 must be analyzed
+                                table_position-=1; // We point the address of the cells at the right of the table
+                                square_position = -1;
+                                while(table_position >= Game.WIDTH * (Math.floor(i/Game.WIDTH))) { // We move through the cells of the table in a right direction
+                                    //let real_position = Game.search_for_position(table_position);
+                                    if (Game.DEBUG)
+                                        console.log("TEST1 table_position: ", table_position, "square_position: ", square_position);
+                                    if (!Game.square_array[table_position].inserted) { // If the cell contains no values, the cell will be a candidate for use
+                                        square_position = table_position;
+                                    } else {
+                                        if (Game.square_array[table_position].number == Game.square_array[i].number) {
+                                            Game.square_array[table_position].change_number(Game.square_array[table_position].number *2);
+                                            Game.square_array[i].remove_position();
+                                            if(Game.occupied > 0)
+                                                Game.occupied -=1
+                                        }
+                                        break;
+                                    }
+                                    table_position-=1;
+                                }
+
+                                if(Game.DEBUG)
+                                    console.log("TEST2 table_position: ", table_position, "square_position: ", square_position);
+                                
+                                if (square_position != -1) {
+                                    Game.square_array[square_position].insert(Game.square_array[i].number);
+                                    Game.square_array[i].remove_position();
                                 }
                             }
                         }
                         Game.insert_square();
                     } else 
-                    if (event.keyCode == '97' || event.keyCode == '39') {
-                        console.log("direita");
-                        Game.insert_square();
-                    } else 
                     if (event.keyCode == '115' || event.keyCode == '40') {
-                        console.log("baixo");
+                        for (let i = Game.ELEMENTS_NUMBER -5; i >= 0; i--) {
+                            if (Game.square_array[i].inserted) {
+                                let table_position = Game.square_array[i].position; // We take a position of a table cell
+                                // We want to check each element to determine whether or not to bring up
+                                // If an element is 3, elements 7, 11 and 15 must be analyzed
+                                table_position+=4; // We point the address of the cells at the bottom of the table
+                                square_position = -1;
+                                while(table_position <= Game.ELEMENTS_NUMBER -1) { // We move through the cells of the table in an forward direction
+                                    if (Game.DEBUG)
+                                        console.log("TEST1 table_position: ", table_position, "square_position: ", square_position);
+                                    if (!Game.square_array[table_position].inserted) { // If the cell contains no values, the cell will be a candidate for use
+                                        square_position = table_position;
+                                    } else {
+                                        if (Game.square_array[table_position].number == Game.square_array[i].number) {
+                                            Game.square_array[table_position].change_number(Game.square_array[table_position].number *2);
+                                            Game.square_array[i].remove_position();
+                                            if(Game.occupied > 0)
+                                                Game.occupied -=1
+                                        }
+                                        break;
+                                    }
+                                    table_position+=4;
+                                }
+                                if(Game.DEBUG)
+                                    console.log("TEST2 table_position: ", table_position, "square_position: ", square_position);
+                                
+                                if (square_position != -1) {
+                                    Game.square_array[square_position].insert(Game.square_array[i].number);
+                                    Game.square_array[i].remove_position();
+                                }
+                            }
+                        }
                         Game.insert_square();
                     } else 
-                    if (event.keyCode == '100' || event.keyCode == '37') {
-                        console.log("esquerda");
+                    if (event.keyCode == '100' || event.keyCode == '68' || event.keyCode == '39') {
+                        for (let i = 0; i < Game.ELEMENTS_NUMBER; i++) {
+                            if (Game.square_array[i].inserted) {
+                                let table_position = Game.square_array[i].position; // We take a position of a table cell
+                                // We want to check each element to determine whether or not to bring up
+                                // If an element is 5, elements 6 and 7 must be analyzed
+                                table_position+=1; // We point the address of the cells at the right of the table
+                                square_position = -1;
+                                while(table_position < Game.WIDTH * (Math.floor(i/Game.WIDTH)+1)) { // We move through the cells of the table in a right direction
+                                    //let real_position = Game.search_for_position(table_position);
+                                    if (Game.DEBUG)
+                                        console.log("TEST1 table_position: ", table_position, "square_position: ", square_position);
+                                    if (!Game.square_array[table_position].inserted) { // If the cell contains no values, the cell will be a candidate for use
+                                        square_position = table_position;
+                                    } else {
+                                        if (Game.square_array[table_position].number == Game.square_array[i].number) {
+                                            Game.square_array[table_position].change_number(Game.square_array[table_position].number *2);
+                                            Game.square_array[i].remove_position();
+                                            if(Game.occupied > 0)
+                                                Game.occupied -=1;
+                                        }
+                                        break;
+                                    }
+                                    table_position+=1;
+                                }
+
+                                if(Game.DEBUG)
+                                    console.log("TEST2 table_position: ", table_position, "square_position: ", square_position);
+                                
+                                if (square_position != -1) {
+                                    Game.square_array[square_position].insert(Game.square_array[i].number);
+                                    Game.square_array[i].remove_position();
+                                }
+                            }
+                        }
                         Game.insert_square();
                     }
                 }
@@ -121,13 +270,15 @@
                 Game.insert_square();
             }, 
             insert_square : function () {
+                if (Game.DEBUG)
+                    console.log("Game.occupied: ", Game.occupied)
                 if (Game.occupied < Game.ELEMENTS_NUMBER) {
                     let inserted = false;
                     let number = parseInt(Game.ELEMENTS_NUMBER*Math.random());
                     while(!inserted) {
                         // Now we want to insert into a square the number
                         if (!Game.square_array[number].inserted) {
-                            Game.square_array[number].insert(number +1, 2);
+                            Game.square_array[number].insert(2);
                             inserted = true;
                         } else
                         number = parseInt(Game.ELEMENTS_NUMBER*Math.random());
@@ -142,7 +293,7 @@
                 }
             },
 
-            search_for_position : function(position) {
+            /*search_for_position : function(position) {
                 let index = -1;
                 for (let i=0; i < Game.ELEMENTS_NUMBER; i++) {
                     if (Game.DEBUG) {
@@ -154,8 +305,7 @@
                     }
                 }
                 return index;
-            }
-
+            }*/
         }
     </script>
 </head>
@@ -164,28 +314,28 @@
     <table width="500px" height="500px">
         <tbody>
             <tr>
+                <td id="0"></td>
                 <td id="1"></td>
                 <td id="2"></td>
                 <td id="3"></td>
-                <td id="4"></td>
             </tr>
             <tr>
+                <td id="4"></td>
                 <td id="5"></td>
                 <td id="6"></td>
                 <td id="7"></td>
-                <td id="8"></td>
             </tr>
             <tr>
+                <td id="8"></td>
                 <td id="9"></td>
                 <td id="10"></td>
                 <td id="11"></td>
-                <td id="12"></td>
             </tr>
             <tr>
+                <td id="12"></td>
                 <td id="13"></td>
                 <td id="14"></td>
                 <td id="15"></td>
-                <td id="16"></td>
             </tr>
         </tbody>
     </table>
