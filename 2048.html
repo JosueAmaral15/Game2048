@@ -27,10 +27,10 @@
     <script>
 
         /*
-            [] Resolver problema com a inserção de novos elementos sem movimento de peças;
-            [] Resolver problema de movimentos travados de peças para a direita e para a esquerda;
-            [] Resolver problema de movimentos recursivos que faz com que as peças façam combos (combinações) em uma única jogada;
-            [] Resolver problema ou bug referente à variável Game.occupied (não está sumindo peças);
+            [x] Resolver problema com a inserção de novos elementos sem movimento de peças;
+            [x] Resolver problema de movimentos travados de peças para a direita e para a esquerda;
+            [x] Resolver problema de movimentos recursivos que faz com que as peças façam combos (combinações) em uma única jogada;
+            [x] Resolver problema ou bug referente à variável Game.occupied (não está sumindo peças);
         */
 
         function Squares (position, number, inserted) {
@@ -72,7 +72,7 @@
             }
             */
             this.insert = function (number) {
-                this.number = number;
+                this.number = number; // Se refere ao número que cada caixa irá ter como identificador 
                 let element = document.getElementById(this.position.toString());
                 if (Game.DEBUG)
                     console.log("TEST this.position: ", this.position, "this.number", this.number)
@@ -252,7 +252,7 @@
                                 if (Game.DEBUG)
                                     console.log ("table_position: ", table_position);
                                 // We want to check each element to determine whether or not to bring up
-                                // If an element is 5, elements 6 and 7 must be analyzed
+                                // If an element is 10, elements 9 and 8 must be analyzed
                                 table_position+=1; // We point the address of the cells at the right of the table
                                 square_position = -1;
                                 while(table_position < Game.WIDTH * (Math.floor(i/Game.WIDTH)+1)) { // We move through the cells of the table in a right direction
@@ -349,25 +349,10 @@
                         console.log("TEST decrementing Game.occupied: ", Game.occupied, "removing square (number): ", number);
                 }
             },
-
-            /*search_for_position : function(position) {
-                let index = -1;
-                for (let i=0; i < Game.ELEMENTS_NUMBER; i++) {
-                    if (Game.DEBUG) {
-                        console.log("i: ", i, "position: ", position, "Game.square_array[i].position: ", Game.square_array[i].position, "Game.square_array[i].position == position: ", Game.square_array[i].position == position);
-                    }
-                    if (Game.square_array[i].position == position) {
-                        index = i;
-                        break;
-                    }
-                }
-                return index;
-            }*/
         }
     </script>
 </head>
 <body>
-    <div id="time"></div>
     <table width="500px" height="500px">
         <tbody>
             <tr>
@@ -397,13 +382,6 @@
         </tbody>
     </table>
     <script>
-        d1 = new Date();
-        function updateDate() {
-            d1 = new Date();
-            time.innerHTML = d1.getHours() +":"+d1.getMinutes()+":"+d1.getSeconds();
-        }
-        
-        setInterval(updateDate,1000);
         Game.prepare();
     </script>
 </body>
