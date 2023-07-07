@@ -11,7 +11,7 @@
         }
 
         table td {
-            border: 1px solid black;
+            border: 1px dashed black;
             text-align: center;
             vertical-align:center;
             width:125px;
@@ -32,7 +32,7 @@
             [x] Resolver problema de movimentos recursivos que faz com que as peças façam combos (combinações) em uma única jogada;
             [x] Resolver problema ou bug referente à variável Game.occupied (não está sumindo peças);
         */
-
+        
         function Squares (position, number, inserted) {
             this.position = position;
             this.number = number;
@@ -71,6 +71,7 @@
                 element.innerHTML = number.toString();
             }
             */
+            /*
             this.insert = function (number) {
                 this.number = number; // Se refere ao número que cada caixa irá ter como identificador 
                 let element = document.getElementById(this.position.toString());
@@ -80,7 +81,18 @@
                 if (this.inserted != true)
                     this.inserted = true;
             }
+            */
 
+            this.insert = function (number) {
+                this.number = number; // Se refere ao número que cada caixa irá ter como identificador 
+                let element = document.getElementById(this.position.toString());
+                if (Game.DEBUG)
+                    console.log("TEST this.position: ", this.position, "this.number", this.number)
+                element.innerHTML = number.toString();
+                if (this.inserted != true)
+                    this.inserted = true;
+            }
+            
             this.remove_position = function() {
                 if(this.inserted) {
                     let element = document.getElementById(this.position.toString());
@@ -96,8 +108,8 @@
             }
         }
 
-        var Game = { 
-            DEBUG : true,
+        var Game = {
+            DEBUG : false,
             ELEMENTS_NUMBER : 16,
             WIDTH: 4,
             HEIGHT : 4,
