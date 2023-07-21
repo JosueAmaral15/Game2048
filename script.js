@@ -1,12 +1,12 @@
 function Squares (position, number, inserted) {
-    this.position = position;
-    this.number = number;
+    this.position = position; // Position that the element will have in the table
+    this.number = number; //
     this.inserted = inserted;
     this.id = Game.number_moves;
     this.changed = false;
 
     this.insert = function (number) {
-        this.number = number; // Se refere ao número que cada caixa irá ter como identificador 
+        this.number = number; // Refers to the number that each box will have as an identifier
         this.id = Game.number_moves;
         let element = document.getElementById(this.position.toString());
         let table = document.getElementById("main-table");
@@ -98,6 +98,7 @@ const Game = {
     continue_game : true,
     interval_programmed : false,
     first_time : true,
+    points : 0,
 
     prepare : function () {
         if(!Game.programmed_start) {
@@ -185,10 +186,11 @@ const Game = {
 
             if (Game.DEBUG)
                 console.log("/////");
+
             Game.wait_keyboard_response_time();
-            Game.continue_game = Game.check_possibility_of_moves ();
-            if (!Game.continue_game)
-                Control.game_over();
+            // Game.continue_game = Game.check_possibility_of_moves ();
+            // if (!Game.continue_game)
+            //     Control.game_over();
         }
     }, // End of document.body.keypress
 
@@ -249,6 +251,7 @@ const Game = {
                             if (!move_occured)
                                 move_occured = true;
                             //Game.exchange_data(i, square_position);
+                            Control.increment_score();  
                         }
                         break;
                     }
@@ -319,6 +322,10 @@ const Game = {
             }
                 
         }
+
+        Game.continue_game = Game.check_possibility_of_moves ();
+        if (!Game.continue_game)
+            Control.game_over();
     },
 
     remove_square_GUI : function (number) {
@@ -461,6 +468,7 @@ const Control = {
 
     music_on : true,
     time_panel : 1000,
+    score : 100,
 
     run : function() { // main function of this object
         Control.initialization();
@@ -601,7 +609,38 @@ const Control = {
             button_sound.appendChild(text_button_sound);
             div_sound.appendChild(button_sound);
             document.body.appendChild(div_sound);
+            //Scoreboard
+            const scoreboard = document.createElement("div");
+            scoreboard.style.position = "absolute";
+            scoreboard.style.left = "518px";
+            scoreboard.style.top = "70px";
+            scoreboard.style.backgroundColor = "goldenRod";
+            scoreboard.style.display = "flex";
+            scoreboard.style.flexDirection = "column";
+            scoreboard.style.justifyContent = "space-evenly";
+            scoreboard.style.alignItems = "center";
+            scoreboard.style.padding = "0.5rem 2rem";
+            scoreboard.style.borderRadius = "0.5rem";
+            scoreboard.style.color = "rgb(40,40,40)";
+            const above = document.createElement("div");
+            above.style.fontWeight = "bold";
+            const score = document.createTextNode("score: ");
+            above.appendChild(score);
+            scoreboard.appendChild(above);
+            const below = document.createElement("div");
+            below.id = "score";
+            const text_score = document.createTextNode("0");
+            below.appendChild(text_score);
+            scoreboard.appendChild(below);
+            document.body.appendChild(scoreboard);
         }
+    },
+
+    increment_score : function() {
+        const score = document.getElementById("score");
+        const text_node = score.firstChild;
+        let value = parseInt(text_node.nodeValue) +Control.score;
+        text_node.nodeValue = value.toString();
     },
 
     appear_panel : function() {
@@ -732,6 +771,10 @@ const Control = {
         Game.continue_game = true;
         Game.number_moves = 0;
         Game.allow_key_press = true;
+
+        const score = document.getElementById("score"); //Resetting the scoreboard
+        const data = score.firstChild;
+        data.nodeValue = "0";
         //Game.programmed_start = false;
 
         if (Game.interval_programmed)
