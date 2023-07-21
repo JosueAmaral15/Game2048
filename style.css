@@ -1,0 +1,42 @@
+table {
+    border-collapse:collapse;
+    background-color:brown;
+}
+
+table td {
+    border: 1px dashed black;
+    text-align: center;
+    vertical-align:center;
+    width:125px;
+    height:120px;
+}
+
+#time {
+    padding:1rem;
+    margin:1rem;
+    
+}
+
+@keyframes slide-panel {
+    from {
+        top : 100px;
+        opacity : 0;
+    }
+
+    to {
+        top : 200px;
+        opacity : 1;
+    }
+}
+
+@keyframes slide-panel2 {
+    from {
+        top : 100px;
+        opacity : 0;
+    }
+
+    to {
+        top : 20vh;
+        opacity : 1;
+    }
+}
