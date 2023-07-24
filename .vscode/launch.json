@@ -4,12 +4,12 @@
     // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080/2048 Game.html",
-            "webRoot": "${workspaceFolder}"
+            "name": "Open 2048 Game.html",
+            "file": "c:\\Users\\Olá\\Documents\\Programação (programming)\\Linguagens de programação\\HTML - My files\\Aprendizagem da linguagem HTML\\Learning JavaScript\\Simple programs\\2048\\2048 Game.html"
         }
     ]
 }
