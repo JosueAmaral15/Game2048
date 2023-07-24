@@ -15,8 +15,8 @@ function Squares (position, number, inserted) {
         div.appendChild(text);
         div.id = "A"+Game.number_moves.toString(); // The new game piece will have its identification number.
         // All game pieces will have their identification number starting with the capital letter A.
-        div.style.width = "125px";
-        div.style.height = "125px";
+        div.style.width = (element.style.width != ""? element.style.width : "125px"); //"125px";
+        div.style.height = (element.style.height != ""? element.style.height : "125px" ); //"125px";
         div.style.borderRadius = "20px";
         div.style.backgroundColor = (number <= Game.NUMBER_COLOR_LIMIT? Game.square_color[number] : "Violet");
         div.style.position = "absolute";
@@ -25,8 +25,8 @@ function Squares (position, number, inserted) {
         div.style.justifyContent = "center";
         div.style.fontWeight = "bold";
         div.style.color = "white";
-        div.style.top = (element.offsetTop+Game.margin_top).toString()+"px"; // Determining the position of the game piece vertically
-        div.style.left = (element.offsetLeft+Game.margin_left).toString()+"px"; //Determining the position of the game piece horizontally
+        div.style.top = (element.offsetTop+Game.MARGIN_TOP).toString()+"px"; // Determining the position of the game piece vertically
+        div.style.left = (element.offsetLeft+Game.MARGIN_LEFT).toString()+"px"; //Determining the position of the game piece horizontally
         document.body.appendChild(div);
 
         if (Game.DEBUG)
@@ -43,13 +43,13 @@ function Squares (position, number, inserted) {
             if (Game.DEBUG)
                 console.log("moving to left/right");
             div.style.transition = `left ${Game.time}ms`; // transition time is defined as the time of game events.
-            div.style.left = x.toString()+"px";
+            div.style.left = x.toString()+Game.MEASURE_WIDTH;
         } 
         else { // otherwise, the game piece is moved horizontally.
             if (Game.DEBUG)
                 console.log("moving to top/bottom");
             div.style.transition = `top ${Game.time}ms`;
-            div.style.top = y.toString()+"px";
+            div.style.top = y.toString()+Game.MEASURE_HEIGHT;
         }
     }
     
@@ -85,15 +85,20 @@ const Game = {
     DEBUG : false, // Here we will define a debug variable to help in the process of correcting the code.
     ELEMENTS_NUMBER : 16, // Number of game pieces.
     HEIGHT : 4, // Number of game pieces vertically.
+    INCREMENTAL_VALUE : -5,
+    MARGIN_LEFT : 9, // Margin to the left of the table.
+    MARGIN_TOP : 10, // Margin above the table.
+    MEASURE_WIDTH : "px",
+    MEASURE_HEIGHT : "px",
     NUMBER_COLOR_LIMIT : 4096, // Limit or Final value of game pieces that must have colors.
     WIDTH: 4, // number of game pieces horizontally.
+    TABLE_WIDTH : 500,
+    TABLE_HEIGHT :  500,
     allow_key_press : true, // Attribute that determines whether the user can interact with the game in terms of keystrokes.
     continue_game : true, // Attribute that defines whether or not the game should end.
     count : 0, // Count that guides the steps of the programmed game.
     first_time : true, // Attribute reporting whether the player is playing for the first time.
     interval_programmed : false, // Attribute that receives the value of setInterval and that serves to eliminate iterations later.
-    margin_left : 9, // Margin to the left of the table.
-    margin_top : 9, // Margin above the table.
     number_moves : 0, // Number of game moves.
     number_to_remove : new Set, // Set of identification values (ID's) of game graphic pieces for removal of graphic pieces.
     number_to_change : new Set, // Set of identification values (ID's) of graphic game pieces to change the number of graphic pieces.
@@ -101,7 +106,7 @@ const Game = {
     programmed_start : false, // Attribute that determines whether or not the game must be programmed, that is, moved by the machine or by the computer.
     square_array : Array(), // Game pieces array.
     square_color : {2: "goldenrod", 4 : "orange", 8: "Chocolate", 16: "red", 32 : "YellowGreen", 64 : "Green", 128 : "MediumSeaGreen", 256 : "Teal", 512 : "Aqua", 1024 : "Cyan", 2048 : "white", 4096 : "Violet"},
-    time: 1000, // Time in milliseconds of game events and transitions.
+    time: 250, // Time in milliseconds of game events and transitions.
     probability_four : 0.05, // Probability of the game piece with value four appearing in the game.
 
     prepare : function () { // Function that provides the program with the functionalities and elements necessary to start the game.
@@ -399,11 +404,11 @@ const Game = {
     },
 
     X_axis_movement : function(square_position) { // Formula for horizontal movement.
-        return 125*(square_position-4*Math.floor(square_position/4))+Game.margin_left;
+        return Math.floor(Game.TABLE_WIDTH/Game.WIDTH)*(square_position % Game.WIDTH)+Game.MARGIN_LEFT;
     },
 
     Y_axis_movement : function(square_position) { // Formula for vertical movement.
-        return 125*(Math.floor(square_position / 4)) +Game.margin_top;
+        return Math.floor(Game.TABLE_HEIGHT/Game.HEIGHT)*(Math.floor(square_position / Game.WIDTH)) +Game.MARGIN_TOP;
     },
 
     check_possibility_of_moves : function () { // Here we will analyze if there are possibilities of moves for the user. For this, one must know if there is any piece that has a value equal to its neighbor.
@@ -411,7 +416,7 @@ const Game = {
         if (Game.occupied == Game.ELEMENTS_NUMBER) { // If the amount of game pieces exactly equals the total capacity of pieces that can be inserted, then:
             for(let i = 0; i < Game.ELEMENTS_NUMBER; i++) {
                 if (Game.square_array[i].inserted) { // If the game piece exists and is defined within the square_array attribute:
-                    if (Game.square_array[i].position > 4*Math.floor(Game.square_array[i].position/4)) { // checking left equality; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
+                    if (Game.square_array[i].position > Game.WIDTH*Math.floor(Game.square_array[i].position/Game.WIDTH)) { // checking left equality; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
                         if (Game.square_array[i -1].inserted) { // If the piece on the left exists and is placed inside the square_array attribute:
                             if(Game.square_array[i].number == Game.square_array[i -1].number) { // If the game tile's number or value is exactly the same as its neighbor's:
                                 if (!there_is_possibility) // So there is possibility to continue the game.
@@ -420,7 +425,7 @@ const Game = {
                         }
                     }
 
-                    if (Game.square_array[i].position < 4*Math.floor(Game.square_array[i].position/4 +1)-1) { // checking right equality; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
+                    if (Game.square_array[i].position < Game.WIDTH*Math.floor(Game.square_array[i].position/Game.WIDTH +1)-1) { // checking right equality; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
                         if (Game.square_array[i +1].inserted) { // If the piece on the right exists and is placed inside the square_array attribute:
                             if(Game.square_array[i].number == Game.square_array[i +1].number) { // If the game tile's number or value is exactly the same as its neighbor's:
                                 if (!there_is_possibility)  // So there is possibility to continue the game.
@@ -429,18 +434,18 @@ const Game = {
                         }
                     }
 
-                    if (Math.floor(Game.square_array[i].position > Game.square_array[i].position % 4)) { // checking equality above; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
-                        if (Game.square_array[i -4].inserted) { // If the top piece exists and is placed inside the square_array attribute:
-                            if(Game.square_array[i].number == Game.square_array[i -4].number) { // If the game tile's number or value is exactly the same as its neighbor's:
+                    if (Math.floor(Game.square_array[i].position > Game.square_array[i].position % Game.WIDTH)) { // checking equality above; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
+                        if (Game.square_array[i -Game.WIDTH].inserted) { // If the top piece exists and is placed inside the square_array attribute:
+                            if(Game.square_array[i].number == Game.square_array[i -Game.WIDTH].number) { // If the game tile's number or value is exactly the same as its neighbor's:
                                 if (!there_is_possibility) // So there is possibility to continue the game.
                                     there_is_possibility = true;
                             }
                         }
                     }
 
-                    if(Math.floor(Game.square_array[i].position < Game.square_array[i].position % 4 +12)) { // checking equality below; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
-                        if (Game.square_array[i +4].inserted) { // If the bottom piece exists and is placed inside the square_array attribute:
-                            if(Game.square_array[i].number == Game.square_array[i +4].number) { // If the game tile's number or value is exactly the same as its neighbor's:
+                    if(Math.floor(Game.square_array[i].position < Game.square_array[i].position % Game.WIDTH +Game.ELEMENTS_NUMBER -Game.WIDTH)) { // checking equality below; In this conditional we are verifying that the position analysis does not exceed the limits horizontally or vertically of the game table.
+                        if (Game.square_array[i +Game.WIDTH].inserted) { // If the bottom piece exists and is placed inside the square_array attribute:
+                            if(Game.square_array[i].number == Game.square_array[i +Game.WIDTH].number) { // If the game tile's number or value is exactly the same as its neighbor's:
                                 if (!there_is_possibility) //  So there is possibility to continue the game.
                                     there_is_possibility = true;
                             }
@@ -467,13 +472,43 @@ const Control = { // Object that is responsible for the integral control of the 
     },
 
     initialization : function() { // Function that draws all initialization elements: text, buttons and panel.
-        //Panel
+
         let panel = document.getElementById("panel");
         if (panel != null) {
             setTimeout(Control.appear_panel,Control.time_panel);
             panel.style.opacity = "1";
         }
         else {
+
+            //Table
+            const table = document.createElement("table");
+            table.id = "main-table";
+            table.style.width = `${Game.TABLE_WIDTH}${Game.MEASURE_WIDTH}`;
+            table.style.height = `${Game.TABLE_HEIGHT}${Game.MEASURE_HEIGHT}`;
+            table.style.borderCollapse = "collapse";
+            table.style.backgroundColor = "brown";
+            document.body.appendChild(table);
+            const tbody = document.createElement("tbody");
+            table.appendChild(tbody);
+            //width:125px;
+            //height:120px;
+            for (let i  = 0; i < Game.HEIGHT; i++) {
+                let tr = document.createElement("tr");
+                tbody.appendChild(tr);
+                for(let j = 0; j < Game.WIDTH; j++) {
+                    let td = document.createElement("td");
+                    td.id = String (j +i * Game.WIDTH);
+                    td.style.border = "1px dashed black";
+                    td.style.textAlign = "center";
+                    td.style.verticalAlign = "center";
+                    td.style.width = `${Math.floor(Game.TABLE_WIDTH/4)}${Game.MEASURE_WIDTH}`;
+                    td.style.height = `${Math.floor(Game.TABLE_HEIGHT/4)+Game.INCREMENTAL_VALUE}${Game.MEASURE_HEIGHT}`;
+                    tr.appendChild(td);
+                    
+                }
+            }
+
+            //Panel
             panel = document.createElement("div");
             panel.id = "panel";
             panel.innerHTML = "";
