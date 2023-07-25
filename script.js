@@ -196,6 +196,11 @@ const Game = {
                 console.log("/////");
 
             Game.wait_keyboard_response_time(); // With this attribute, the game will take a certain amount of time to respond again so that the user can perform the movements. The attribute responsible for the time value would be Game.time.
+            Game.continue_game = Game.check_possibility_of_moves (); // During the insertion we will check if there is the possibility to continue the game.
+            if (!Game.continue_game) {// If the player cannot move the pieces, this will be notified as game over.
+                Control.game_over();
+                Game.match_in_progress = false;
+            }
             
         }
     }, // End of document.body.keypress
@@ -464,6 +469,8 @@ const Control = { // Object that is responsible for the integral control of the 
     music_on : true, // Attribute that acts on the music.
     option_menu_appear : false, // Attribute that indicates whether the options menu is appearing on the screen.
     time_panel : 1000, // Transition time or duration of GUI events.
+    //label_ammount : 8,
+    label_colors : ["brown", "mediumSpringGreen", "skyblue", "LavenderBlush", "sienna", "rebeccapurple", "mediumTurquoise", "fuchsia"],
 
     run : function() { // main function of this object
         Control.initialization();
@@ -632,8 +639,8 @@ const Control = { // Object that is responsible for the integral control of the 
             //Scoreboard
             const scoreboard = document.createElement("div");
             scoreboard.style.position = "absolute";
-            scoreboard.style.left = "518px";
-            scoreboard.style.top = "70px";
+            scoreboard.style.left = "520px";
+            scoreboard.style.top = "140px";
             scoreboard.style.backgroundColor = "goldenRod";
             scoreboard.style.display = "flex";
             scoreboard.style.flexDirection = "column";
@@ -657,8 +664,8 @@ const Control = { // Object that is responsible for the integral control of the 
             const options = document.createElement("div");
             options.style.position = "absolute";
             options.style.left = "520px";
-            options.style.top = "135px";
-            options.style.width = "6.5rem";
+            options.style.top = "210px";
+            options.style.width = "6.4rem";
             options.style.height = "3.25rem";
             options.style.borderRadius = "0.5rem";
             options.style.display = "flex";
@@ -667,6 +674,7 @@ const Control = { // Object that is responsible for the integral control of the 
             options.style.alignItems = "center";
             options.style.backgroundColor = "cyan";
             options.style.border = "1px outset lightgray";
+            options.style.cursor= "pointer";
             options.onmousedown = () => {
                 options.style.border = "1px inset lightgray";
                 options.style.filter = "grayscale(25%)";
@@ -778,7 +786,6 @@ const Control = { // Object that is responsible for the integral control of the 
             div_text_options.style.textShadow = "5px 5px 2px darkgray";
             div_text_options.style.fontSize = "xx-large";
             options_panel.appendChild(div_text_options);
-
             // Buttons
             const div_buttons = document.createElement("div");
             div_buttons.style.display = "flex";
@@ -812,7 +819,7 @@ const Control = { // Object that is responsible for the integral control of the 
                 setTimeout(Control.initialization, Control.time);
                 setTimeout(Control.remove_options_panel, Control.time_panel);
             }
-            
+
             const button_opt3 = document.createElement("button");
             button_opt3.style.color = "rgb(71,71,71)";
             button_opt3.style.fontWeight = "bold";
@@ -829,6 +836,71 @@ const Control = { // Object that is responsible for the integral control of the 
             div_buttons.appendChild(button_opt1);
             div_buttons.appendChild(button_opt2);
             options_panel.appendChild(div_buttons);
+
+            // Labels
+            const colors_panel = document.createElement("div");
+            colors_panel.style.display = "flex";
+            colors_panel.style.flexDirection = "row";
+            colors_panel.style.justifyContent = "space-around";
+            colors_panel.style.alignItems = "center";
+            colors_panel.style.width = `${Game.TABLE_WIDTH}${Game.MEASURE_WIDTH}`;
+            //colors_panel.style.height = `${Game.TABLE_HEIGHT}${Game.MEASURE_HEIGHT}`;
+            document.body.appendChild(colors_panel);
+            for (let i = 0; i < Control.label_colors.length; i++) {
+                let div = document.createElement("div");
+                let input = document.createElement("input");
+                input.type = "radio";
+                input.name = "color";
+                input.id = "i"+i.toString();
+                //input.style.display = "none";
+                input.style.visibility = "hidden";
+                div.appendChild(input);
+                let label = document.createElement("label");
+                label.id = "l"+i.toString();
+                //label.for = input.id;
+                label.setAttribute("for", input.id);
+                label.style.width = "30px";
+                label.style.height = "30px";
+                label.style.display = "block";
+                label.style.cursor = "pointer";
+                label.style.backgroundColor = Control.label_colors[i];
+                label.onclick = () => {
+                    const table = document.getElementById("main-table");
+                    table.style.backgroundColor = label.style.backgroundColor;
+                };
+                div.appendChild(label);
+                colors_panel.appendChild(div);
+            }
+
+            //Best score
+            const best_score = document.createElement("div");
+            best_score.style.width = "5.8rem";
+            best_score.style.height = "2.5rem";
+            best_score.style.backgroundColor = "PaleGoldenRod";
+            best_score.style.position = "absolute";
+            best_score.style.left = "520px";
+            best_score.style.top = "75px";
+            best_score.style.borderRadius = "0.5rem";
+            best_score.style.display = "flex";
+            best_score.style.flexDirection = "column";
+            best_score.style.justifyContent = "space-between";
+            best_score.style.alignItems = "center";
+            best_score.style.padding = "0.35rem";
+            best_score.style.fontWeight = "bold";
+            best_score.style.color = "chocolate";
+            best_score.style.fontVariant = "small-caps";
+            const div_best_score = document.createElement("div");
+            const text_best_score = document.createTextNode("best score:");
+            div_best_score.appendChild(text_best_score);
+            best_score.appendChild(div_best_score);
+            const div_best_score2 = document.createElement("div");
+            div_best_score2.id = "best-score";
+            let score_text = document.createTextNode(localStorage.getItem("best-score"));
+            if (score_text == null)
+                score_text = document.createTextNode("0");
+            div_best_score2.appendChild(score_text);
+            best_score.appendChild(div_best_score2);
+            document.body.appendChild(best_score);
         }
     },
 
@@ -837,6 +909,12 @@ const Control = { // Object that is responsible for the integral control of the 
         const text_node = score.firstChild;
         let value = parseInt(text_node.nodeValue) +Control.inc_score;
         text_node.nodeValue = value.toString();
+        const best_score = document.getElementById("best-score");
+        const text_node2 = best_score.firstChild;        
+        if (parseInt(text_node2.nodeValue) < value) {
+            text_node2.nodeValue = value.toString();
+            localStorage.setItem("best-score", value.toString())
+        }
     },
 
     appear_panel : function() { // Function that makes the launch panel appear.
