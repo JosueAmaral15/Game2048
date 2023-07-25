@@ -85,15 +85,15 @@ const Game = {
     DEBUG : false, // Here we will define a debug variable to help in the process of correcting the code.
     ELEMENTS_NUMBER : 16, // Number of game pieces.
     HEIGHT : 4, // Number of game pieces vertically.
-    INCREMENTAL_VALUE : -5,
+    INCREMENTAL_VALUE : -5, // Value that is defined to be able to adjust the pieces vertically in the correct position in the graphic environment.
     MARGIN_LEFT : 9, // Margin to the left of the table.
     MARGIN_TOP : 10, // Margin above the table.
-    MEASURE_WIDTH : "px",
-    MEASURE_HEIGHT : "px",
+    MEASURE_WIDTH : "px", // Measure value for the horizontal part.
+    MEASURE_HEIGHT : "px", // Measure value for the vertical part.
     NUMBER_COLOR_LIMIT : 4096, // Limit or Final value of game pieces that must have colors.
     WIDTH: 4, // number of game pieces horizontally.
-    TABLE_WIDTH : 500,
-    TABLE_HEIGHT :  500,
+    TABLE_WIDTH : 500, // table size horizontally.
+    TABLE_HEIGHT :  500, // // table size vertically.
     allow_key_press : true, // Attribute that determines whether the user can interact with the game in terms of keystrokes.
     continue_game : true, // Attribute that defines whether or not the game should end.
     count : 0, // Count that guides the steps of the programmed game.
@@ -108,6 +108,7 @@ const Game = {
     square_color : {2: "goldenrod", 4 : "orange", 8: "Chocolate", 16: "red", 32 : "YellowGreen", 64 : "Green", 128 : "MediumSeaGreen", 256 : "Teal", 512 : "Aqua", 1024 : "Cyan", 2048 : "white", 4096 : "Violet"},
     time: 250, // Time in milliseconds of game events and transitions.
     probability_four : 0.05, // Probability of the game piece with value four appearing in the game.
+    match_in_progress : false, // The player must be interacting with the game when the value is true.
 
     prepare : function () { // Function that provides the program with the functionalities and elements necessary to start the game.
         if(!Game.programmed_start) { // If the game is not controlled by the computer, a function is loaded that grants the game the property of detecting keys pressed by the user.
@@ -124,13 +125,15 @@ const Game = {
             
 
         Game.insert_square(); // The first graphic piece of the game is placed on the table.
+        Game.match_in_progress = true;
 
         if(Game.first_time) // first_time attribute is set to false.
             Game.first_time = false;
     }, //end of Game.prepare
 
     execute : function () { // This function is responsible for executing the main features of the game, such as detecting button presses, counting moves and inserting new game pieces.
-        if (Game.allow_key_press && Game.continue_game) { // Whether the program accepts new keystrokes and whether the game has not yet ended:
+        
+        if (Game.allow_key_press && Game.continue_game && !Control.option_menu_appear) { // Whether the program accepts new keystrokes and whether the game has not yet ended:
 
             if (Game.DEBUG) { // Here we will display all the Squares attributes from the square_array array in console.log
                 console.log("before (Game.square_array): ")
@@ -321,55 +324,49 @@ const Game = {
         }
 
         Game.continue_game = Game.check_possibility_of_moves (); // During the insertion we will check if there is the possibility to continue the game.
-        if (!Game.continue_game) // If the player cannot move the pieces, this will be notified as game over.
+        if (!Game.continue_game) {// If the player cannot move the pieces, this will be notified as game over.
             Control.game_over();
+            Game.match_in_progress = false;
+        }
     },
 
-    remove_square_GUI : function (number) {
+    remove_square_GUI : function (number) { // Removing the game piece from the graphical environment
             //Game.square_array[number].remove_position_GUI();
-            let element = document.getElementById("A"+number.toString());
-            //if (element != null)
+            let element = document.getElementById("A"+number.toString()); // Extracting the game block from the graphical environment.
             if (Game.DEBUG)
                 console.log(`Removing element A${number}`);
-            document.body.removeChild(element);
+            document.body.removeChild(element); // Removing the game tile.
         },
 
-    remove_square_CLI : function (number) {
-        if (Game.occupied > 0 && Game.square_array[number].inserted) {
+    remove_square_CLI : function (number) { // Removing game piece from square array.
+        if (Game.occupied > 0 && Game.square_array[number].inserted) { // If there are game pieces on the table and the informed piece is inserted, then:
             Game.square_array[number].remove_position_CLI();
-            Game.occupied--;
+            Game.occupied--; // Decreases the number of existing parts from the total quantity.
             if (Game.DEBUG)
                 console.log("TEST decrementing Game.occupied: ", Game.occupied, "removing square (number): ", number);
         }
     },
 
-    remove_square_delay_GUI : function () {
-        for (let n of Game.number_to_remove) {
+    remove_square_delay_GUI : function () { // In this method we will perform the removal of game pieces graphically, and we will consult a set of identification numbers to carry out this procedure.
+        for (let n of Game.number_to_remove) { // Identification numbers are extracted from the set.
             if(Game.DEBUG)
                 console.log(`Removing square with number ${n}`);
-            Game.remove_square_GUI(n);
+            Game.remove_square_GUI(n); // Removing game pieces one by one.
         }
         Game.number_to_remove = new Set();
     },
 
-    exchange_data : function (i, square_position) {
+    exchange_data : function (i, square_position) { // In this method the game piece data will be transmitted from one part to another inside square_array. 
+        // The variables will exchange data, thus effecting an offset within the square_array.
         if (Game.DEBUG)
             console.log(`Exchanging data between square ${i} and ${square_position}`)
 
-        Game.square_array[square_position].number = Game.square_array[i].number;
-        Game.square_array[square_position].id = Game.square_array[i].id
+        Game.square_array[square_position].number = Game.square_array[i].number; // Exchanging number data.
+        Game.square_array[square_position].id = Game.square_array[i].id // Exchanging ID number data.
         Game.square_array[i].id = -1;
-        Game.square_array[i].inserted = false;
+        Game.square_array[i].inserted = false; // The game tile will no longer exist or will no longer be displayed within the square_array.
         if (!Game.square_array[square_position].inserted)
-            Game.square_array[square_position].inserted = true;
-
-        //let div = document.getElementById("A"+i.toString());
-        //if (document.getElementById("A"+square_position.toString()) != null) {
-        //    if(Game.DEBUG) console.log(`WARNING: element A${square_position} is being deleted!`);
-        //    document.body.removeChild("A"+square_position.toString());
-        //}
-        //div.id = "A"+square_position.toString(); // Colocando a div com número i como quadrado square_position
-            
+            Game.square_array[square_position].inserted = true; // The game piece in another variable inside square_array will be existing.            
     },
 
     change_number_delay_GUI : function () { // Function that will change the value or number of game pieces after a certain time, being this time determined by the Game.time attribute.
@@ -463,16 +460,17 @@ const Game = {
 
 const Control = { // Object that is responsible for the integral control of the game.
 
-    music_on : true, // Attribute that acts on the music.
-    time_panel : 1000, // Transition time or duration of GUI events.
     inc_score : 100, // Variable responsible for determining how much increment the player's score should be.
+    music_on : true, // Attribute that acts on the music.
+    option_menu_appear : false, // Attribute that indicates whether the options menu is appearing on the screen.
+    time_panel : 1000, // Transition time or duration of GUI events.
 
     run : function() { // main function of this object
         Control.initialization();
     },
 
     initialization : function() { // Function that draws all initialization elements: text, buttons and panel.
-
+        Game.match_in_progress = false;
         let panel = document.getElementById("panel");
         if (panel != null) {
             setTimeout(Control.appear_panel,Control.time_panel);
@@ -655,6 +653,182 @@ const Control = { // Object that is responsible for the integral control of the 
             below.appendChild(text_score);
             scoreboard.appendChild(below);
             document.body.appendChild(scoreboard);
+            // Options
+            const options = document.createElement("div");
+            options.style.position = "absolute";
+            options.style.left = "520px";
+            options.style.top = "135px";
+            options.style.width = "6.5rem";
+            options.style.height = "3.25rem";
+            options.style.borderRadius = "0.5rem";
+            options.style.display = "flex";
+            options.style.justifyContent = "space-evenly";
+            options.style.alignContent = "center";
+            options.style.alignItems = "center";
+            options.style.backgroundColor = "cyan";
+            options.style.border = "1px outset lightgray";
+            options.onmousedown = () => {
+                options.style.border = "1px inset lightgray";
+                options.style.filter = "grayscale(25%)";
+            }
+            options.onmouseup = () => { 
+                options.style.border = "1px outset lightgray";
+                options.style.filter = "grayscale(0%)";
+                if(Game.match_in_progress && !Control.option_menu_appear) {
+                    const div = document.getElementById("options-panel");
+                    div.style.opacity = "1";
+                    setTimeout(Control.appear_options_panel,Control.time);
+                    //Game.allow_key_press = false;
+                    Control.option_menu_appear = true;
+                }
+            }
+            const gear = document.createElement("canvas");
+            gear.width = "50";
+            gear.height = "50";
+            const ctx = gear.getContext("2d");
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(22,7); //1
+            ctx.lineTo(27,7); //1
+            ctx.lineTo(27,12);
+            ctx.lineTo(32,14);
+            ctx.lineTo(37,11); //2
+            ctx.lineTo(40,14); //2
+            ctx.lineTo(35,19);
+            ctx.lineTo(36,22);
+            ctx.lineTo(42,22); // 3
+            ctx.lineTo(42,27); // 3
+            ctx.lineTo(35,27);
+            ctx.lineTo(34,30);
+            ctx.lineTo(38,34); // 4
+            ctx.lineTo(35,38); // 4
+            ctx.lineTo(30,33);
+            ctx.lineTo(27,36);
+            ctx.lineTo(27,41); // 5
+            ctx.lineTo(22,41); // 5
+            ctx.lineTo(22,35);
+            ctx.lineTo(18,34);
+            ctx.lineTo(14,39); // 6
+            ctx.lineTo(10,36); // 6
+            ctx.lineTo(14,31);
+            ctx.lineTo(12,28);
+            ctx.lineTo(6,28); // 7
+            ctx.lineTo(6,22); // 7
+            ctx.lineTo(11,22);
+            ctx.lineTo(13,17);
+            ctx.lineTo(10,13); // 8
+            ctx.lineTo(14,9); // 8
+            ctx.lineTo(17,14);
+            ctx.lineTo(22,12);
+            ctx.lineTo(22,7); // 1
+            ctx.stroke();
+            ctx.fillStyle = "gray";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(24,24,4,0,2*Math.PI);
+            ctx.stroke();
+            ctx.fillStyle = "cyan";
+            ctx.fill();
+            options.appendChild(gear);
+            document.body.appendChild(options);
+            //Options panel
+            const options_panel = document.createElement("div");
+            options_panel.id = "options-panel";
+            options_panel.style.maxWidth = "480px";
+            options_panel.style.width = "100%";
+            options_panel.style.maxHeight = "400px";
+            options_panel.style.height = "40vh";
+            options_panel.style.minHeight = "200px";
+            options_panel.style.backgroundColor = "lightgray";
+            options_panel.style.backgroundClip = "padding-box";
+            options_panel.style.border = "10px solid rgba(71,71,71,0.5)";
+            options_panel.style.borderRadius = "3rem";
+            options_panel.style.position = "absolute";
+            options_panel.style.left = "0.5rem";
+            options_panel.style.top = "20vh";
+            options_panel.style.display = "flex";
+            //endgame_panel.style.alignContent = "center";
+            options_panel.style.flexDirection = "column";
+            options_panel.style.alignItems = "center";
+            options_panel.style.justifyContent = "space-evenly";
+            options_panel.style.animationName = "slide-panel2";
+            options_panel.style.animationDuration = "3s";
+            options_panel.style.animationTimingFunction = "ease";
+            options_panel.style.animationDelay = "0s";
+            options_panel.style.animationIterationCount = "1";
+            options_panel.style.animationDirection = "normal";
+            options_panel.style.opacity = "1";
+            options_panel.style.transitionDelay = "0s";
+            options_panel.style.transitionDuration = "1s";
+            options_panel.style.transitionTimingFunction = "ease";
+            options_panel.style.transitionProperty = "opacity";
+            options_panel.style.zIndex = "20";
+            options_panel.style.opacity = "0";
+            options_panel.style.visibility = "hidden";
+            options_panel.style.display = "none";
+            document.body.appendChild(options_panel);
+            // options text
+            const div_text_options = document.createElement("div");
+            const node_text_options = document.createTextNode("Options");
+            div_text_options.appendChild(node_text_options);
+            div_text_options.style.fontWeight = "bold";
+            div_text_options.style.fontFamily = "Verdana";
+            div_text_options.style.fontVariant = "small-caps";
+            div_text_options.style.color = "gray";
+            div_text_options.style.textShadow = "5px 5px 2px darkgray";
+            div_text_options.style.fontSize = "xx-large";
+            options_panel.appendChild(div_text_options);
+
+            // Buttons
+            const div_buttons = document.createElement("div");
+            div_buttons.style.display = "flex";
+            div_buttons.style.flexDirection = "column";
+            div_buttons.style.justifyContent = "space-evenly";
+            div_buttons.style.gap = "1rem";
+            const button_opt1 = document.createElement("button");
+            button_opt1.style.color = "rgb(71,71,71)";
+            button_opt1.style.fontWeight = "bold";
+            button_opt1.style.paddingBlock = "0.25rem";
+            const text_button_opt1 = document.createTextNode("Restart");
+            button_opt1.appendChild(text_button_opt1);
+            button_opt1.onclick = () => { // If the button is clicked, a new interactive game will start.
+                const div = document.getElementById("options-panel");
+                div.style.opacity = "0";
+                Control.reset_game ();
+                setTimeout(Game.prepare, Control.time_panel);
+                setTimeout(Control.remove_options_panel, Control.time_panel);
+            }
+            
+            const button_opt2 = document.createElement("button");
+            button_opt2.style.color = "rgb(71,71,71)";
+            button_opt2.style.fontWeight = "bold";
+            button_opt2.style.paddingBlock = "0.25rem";
+            const text_button_opt2 = document.createTextNode("Back to main menu");
+            button_opt2.appendChild(text_button_opt2);
+            button_opt2.onclick = () => { // If the button is clicked, the player will be taken to the main menu.
+                const div = document.getElementById("options-panel");
+                div.style.opacity = "0";
+                Control.reset_game ();
+                setTimeout(Control.initialization, Control.time);
+                setTimeout(Control.remove_options_panel, Control.time_panel);
+            }
+            
+            const button_opt3 = document.createElement("button");
+            button_opt3.style.color = "rgb(71,71,71)";
+            button_opt3.style.fontWeight = "bold";
+            button_opt3.style.paddingBlock = "0.25rem";
+            const text_button_opt3 = document.createTextNode("Continue Game");
+            button_opt3.appendChild(text_button_opt3);
+            button_opt3.onclick = () => { // If the button is clicked, the player will be taken to the main menu.
+                const div = document.getElementById("options-panel");
+                div.style.opacity = "0";
+                setTimeout(Control.remove_options_panel, Control.time_panel);
+                //Game.allow_key_press = true;
+            }
+            div_buttons.appendChild(button_opt3);
+            div_buttons.appendChild(button_opt1);
+            div_buttons.appendChild(button_opt2);
+            options_panel.appendChild(div_buttons);
         }
     },
 
@@ -689,8 +863,26 @@ const Control = { // Object that is responsible for the integral control of the 
         div.style.display = "flex";
     },
 
+    remove_options_panel : function() { // Function that causes the endgame panel to be removed.
+        const div = document.getElementById("options-panel");
+        div.style.visibility = "hidden";
+        div.style.display = "none";
+        Control.option_menu_appear = false;
+    },
+
+    appear_options_panel : function() { // Function that causes the endgame panel to appear.
+        const div = document.getElementById("options-panel");
+        div.style.visibility = "visible";
+        div.style.display = "flex";
+    },
+
     game_over :function () { // end game function.
         //center panel
+        if (Control.option_menu_appear) {
+            const div = document.getElementById("options-panel");
+            div.style.opacity = "0";
+            setTimeout(Control.remove_options_panel, Control.time_panel);
+        }
         let endgame_panel = document.getElementById("endgame-panel");
         if (endgame_panel != null) { // If the endgame panel exist:
             setTimeout(Control.appear_endgame_panel,Control.time_panel);
