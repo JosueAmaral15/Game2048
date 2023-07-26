@@ -901,6 +901,21 @@ const Control = { // Object that is responsible for the integral control of the 
             div_best_score2.appendChild(score_text);
             best_score.appendChild(div_best_score2);
             document.body.appendChild(best_score);
+
+            //keys Description 
+            const descr = document.createTextNode("Use A, S, D and W keys");
+            const div_descr = document.createElement("div");
+            div_descr.style.width = "5.8rem";
+            div_descr.style.height = "2.5rem";
+            div_descr.style.fontWeight = "bold";
+            div_descr.style.position = "absolute";
+            div_descr.style.textAlign = "center";
+            div_descr.style.verticalAlign = "middle";
+            div_descr.style.left = "525px";
+            div_descr.style.top = "284px";
+
+            div_descr.appendChild(descr);
+            document.body.appendChild(div_descr);
         }
     },
 
