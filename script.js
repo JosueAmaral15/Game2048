@@ -896,8 +896,8 @@ const Control = { // Object that is responsible for the integral control of the 
             const div_best_score2 = document.createElement("div");
             div_best_score2.id = "best-score";
             let score_text = document.createTextNode(localStorage.getItem("best-score"));
-            if (score_text == null)
-                score_text = document.createTextNode("0");
+            if (score_text.nodeValue == "null")
+                score_text.nodeValue = "0";
             div_best_score2.appendChild(score_text);
             best_score.appendChild(div_best_score2);
             document.body.appendChild(best_score);
